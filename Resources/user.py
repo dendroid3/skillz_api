@@ -105,9 +105,10 @@ class SignUpResource(Resource):
         # verification_link = f"http://127.0.0.1:5000/auth/verify/123"
         # msg = MailMessage("Verify Your Email", sender="your-email@example.com", recipients=[email])
         # msg.body = f"Please click the following link to verify your email: {verification_link}"
+        if send_email('kazibin66@gmail.com', 'HELLO', "message"):  
+            return {"message: Inside"}, 200
 
         try:
-
             send_email('kazibin66@gmail.com', 'HELLO', "message")
         except Exception as e:
             return {
