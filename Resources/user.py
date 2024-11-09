@@ -29,16 +29,6 @@ def generate_otp():
 
 def send_email(to_email, subject, content):
 
-    # try:
-    #     server = smtplib.SMTP("smtp.gmail.com", 587)
-    #     server.starttls()
-    #     server.login("kazibin66@gmail.com", "hougxifkgpbquqcy")
-    #     print("Connection successful!")
-    #     server.quit()
-    # except Exception as e:
-    #     print("Error:", e)
-        
-    # return
     # Create the email message
     msg = MailMessage(subject=subject, recipients=[to_email], body=content)
     try:
@@ -106,18 +96,6 @@ class SignUpResource(Resource):
         # msg = MailMessage("Verify Your Email", sender="your-email@example.com", recipients=[email])
         # msg.body = f"Please click the following link to verify your email: {verification_link}"
 
-        try:
-
-            send_email('kazibin66@gmail.com', 'HELLO', "message")
-        except Exception as e:
-            return {
-                'message': f'Failed to send verification email: {e}',
-                'error': 'Verification Email Failed'   
-            }, 500
-
-        return {'message': 'Registration successful. Please check your email to verify your account.'}, 201
-
-
 
 
 
@@ -172,12 +150,13 @@ class SignUpResource(Resource):
                 }, 500
         
         # Send verification email
-        verification_link = f"http://127.0.0.1:5000/auth/verify/{verification_token}"
-        msg = MailMessage("Verify Your Email", sender="your-email@example.com", recipients=[email])
-        msg.body = f"Please click the following link to verify your email: {verification_link}"
+        verification_link = f"https://skillz-api-6411a8af904e.herokuapp.com/auth/verify/{verification_token}"
+        msg_subject = "Verify Your Email"
+        msg_body = f"Please click the following link to verify your email: {verification_link}"
 
         try:
-            mail.send(msg)
+            send_email(email, msg_subject, msg_body)
+
         except Exception as e:
             return {
                 'message': f'Failed to send verification email: {e}',
