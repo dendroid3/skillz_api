@@ -34,12 +34,13 @@ class User(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     last_sign_in = db.Column(db.DateTime)
 
-    courses = db.relationship('Course', backref='user', lazy=True)
-    enrollments = db.relationship('Enrollment', backref='user', lazy=True)
-    reviews = db.relationship('Review', backref='user', lazy=True)
-    sent_messages = db.relationship('Message', foreign_keys='Message.sender_id', backref='sender', lazy=True)
-    received_messages = db.relationship('Message', foreign_keys='Message.receiver_id', backref='receiver', lazy=True)
-    payments = db.relationship('Payment', backref='learner', lazy=True)
+    # Relationships with cascade delete enabled
+    courses = db.relationship('Course', backref='user', lazy=True, cascade="all, delete-orphan")
+    enrollments = db.relationship('Enrollment', backref='user', lazy=True, cascade="all, delete-orphan")
+    reviews = db.relationship('Review', backref='user', lazy=True, cascade="all, delete-orphan")
+    sent_messages = db.relationship('Message', foreign_keys='Message.sender_id', backref='sender', lazy=True, cascade="all, delete-orphan")
+    received_messages = db.relationship('Message', foreign_keys='Message.receiver_id', backref='receiver', lazy=True, cascade="all, delete-orphan")
+    payments = db.relationship('Payment', backref='learner', lazy=True, cascade="all, delete-orphan")
 
     def to_dict(self, include_courses=False):
         user_dict = {
@@ -61,11 +62,10 @@ class User(db.Model):
 
         return user_dict
 
-
 class Course(db.Model, SerializerMixin):
     __tablename__ = 'courses'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    instructor_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    instructor_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     title = db.Column(db.String(255))
     description = db.Column(db.Text)
     price = db.Column(db.DECIMAL(10, 2))
@@ -100,7 +100,7 @@ class Course(db.Model, SerializerMixin):
 class CourseContent(db.Model, SerializerMixin):
     __tablename__ = 'coursecontent'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    course_id = db.Column(db.Integer, db.ForeignKey('courses.id'), nullable=False)
+    course_id = db.Column(db.Integer, db.ForeignKey('courses.id'), nullable=True)
     content_type = db.Column(db.String(50))
     content_url = db.Column(db.String(255))
     created_at = db.Column(db.TIMESTAMP, default=get_eat_now)
@@ -119,8 +119,8 @@ class CourseContent(db.Model, SerializerMixin):
 class Payment(db.Model, SerializerMixin):
     __tablename__ = 'payments'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    course_id = db.Column(db.Integer, db.ForeignKey('courses.id'), nullable=False)
-    learner_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    course_id = db.Column(db.Integer, db.ForeignKey('courses.id'), nullable=True)
+    learner_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     amount = db.Column(db.DECIMAL(10, 2))
     payment_status = db.Column(db.String(50))
     payment_date = db.Column(db.TIMESTAMP, default=get_eat_now)
@@ -138,8 +138,8 @@ class Payment(db.Model, SerializerMixin):
 class Enrollment(db.Model, SerializerMixin):
     __tablename__ = 'enrollments'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    course_id = db.Column(db.Integer, db.ForeignKey('courses.id'), nullable=False)
-    learner_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    course_id = db.Column(db.Integer, db.ForeignKey('courses.id'), nullable=True)
+    learner_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     status = db.Column(db.String(50))
     enrolled_at = db.Column(db.TIMESTAMP, default=get_eat_now)
     completed_at = db.Column(db.TIMESTAMP)
@@ -159,8 +159,8 @@ class Enrollment(db.Model, SerializerMixin):
 class Review(db.Model, SerializerMixin):
     __tablename__ = 'reviews'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    course_id = db.Column(db.Integer, db.ForeignKey('courses.id'), nullable=False)
-    learner_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    course_id = db.Column(db.Integer, db.ForeignKey('courses.id'), nullable=True)
+    learner_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     rating = db.Column(db.Integer)
     comment = db.Column(db.Text)
     created_at = db.Column(db.TIMESTAMP, default=get_eat_now)
@@ -180,8 +180,8 @@ class Review(db.Model, SerializerMixin):
 class Message(db.Model, SerializerMixin):
     __tablename__ = 'messages'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    sender_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)  
-    receiver_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False) 
+    sender_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)  
+    receiver_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True) 
     content = db.Column(db.Text, nullable=False)
     sent_at = db.Column(db.DateTime, default=get_eat_now)
 
@@ -200,7 +200,7 @@ class Message(db.Model, SerializerMixin):
 class Accolade(db.Model, SerializerMixin):
     __tablename__ = 'accolades'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    enrollment_id = db.Column(db.Integer, db.ForeignKey('enrollments.id'), nullable=False)
+    enrollment_id = db.Column(db.Integer, db.ForeignKey('enrollments.id'), nullable=True)
     title = db.Column(db.String(20))
     description = db.Column(db.String(100))
     awarded_at = db.Column(db.TIMESTAMP, default=get_eat_now)

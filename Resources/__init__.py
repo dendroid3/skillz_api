@@ -24,6 +24,7 @@ from .enrollments_resource import enrollment_ns
 from .course import course_ns
 from .payment import payment_ns
 from .course_content import course_contents_ns
+from .reviews import review_ns
 
 
 __all__ = [
@@ -59,5 +60,7 @@ __all__ = [
 
     'payment_ns',
 
-    'course_contents_ns'
+    'course_contents_ns',
+
+    'review_ns'
 ]

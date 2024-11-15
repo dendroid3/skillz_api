@@ -65,7 +65,7 @@ def handle_preflight():
         response.headers.add('Access-Control-Allow-Headers', 'Content-Type, Authorization')
         return response
 
-from Resources import auth_ns, user_ns, users_ns, message_ns, enrollment_ns, course_ns, payment_ns, course_contents_ns
+from Resources import auth_ns, user_ns, users_ns, message_ns, enrollment_ns, course_ns, payment_ns, course_contents_ns, review_ns
 
 # Import resources
 from Resources import (
@@ -100,7 +100,6 @@ api = Api(
 # Define namespaces
 
 accolade_ns = Namespace('accolades', description='Accolade-related operations')
-review_ns = Namespace('reviews', description='Review-related operations')
 
 # auth_ns.add_resource(SignOutResource, '/sign-out')
 
@@ -108,7 +107,6 @@ review_ns = Namespace('reviews', description='Review-related operations')
 accolade_ns.add_resource(AccoladeListResource, '')
 accolade_ns.add_resource(AccoladeResource, '/<int:id>')
 
-review_ns.add_resource(ReviewResource, '', '/reviews/<int:review_id>')
 
 # Register namespaces with the main API, ensuring no extra routes are created
 api.add_namespace(auth_ns)

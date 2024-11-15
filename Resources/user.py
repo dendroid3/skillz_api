@@ -1,11 +1,11 @@
-from flask import request, jsonify, current_app
+from flask import request, jsonify, current_app, Response
 # from flask_restful import Resource
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from models import User, Message, db
 from datetime import datetime, timedelta
 from flask_restx import Namespace, Resource, fields
-
+import json
 import cloudinary.uploader
 import uuid
 
@@ -42,52 +42,52 @@ def send_email(to_email, subject, content):
         return False
   
 class SignUpResource(Resource):
-    # #    # Define the request payload schema for SignUp
-    # auth_sign_up_params_model = auth_ns.model('SignUpParams', {
-    #     'firstName': fields.String(required=True, description='User\'s first name'),
-    #     'lastName': fields.String(required=True, description='User\'s last name'),
-    #     'role': fields.String(required=True, description='User\'s role'),
-    #     'email': fields.String(required=True, description='User\'s email'),
-    #     'password': fields.String(required=True, description='User\'s password'),
-    #     'bio': fields.String(description='User\'s bio'),
-    # })
+    #    # Define the request payload schema for SignUp
+    auth_sign_up_params_model = auth_ns.model('SignUpParams', {
+        'firstName': fields.String(required=True, description='User\'s first name'),
+        'lastName': fields.String(required=True, description='User\'s last name'),
+        'role': fields.String(required=True, description='User\'s role'),
+        'email': fields.String(required=True, description='User\'s email'),
+        'password': fields.String(required=True, description='User\'s password'),
+        'bio': fields.String(description='User\'s bio'),
+    })
 
-    # # Define the response schema for successful signup (201)
-    # auth_sign_up_success_model = auth_ns.model('SignUpSuccess', {
-    #     'message': fields.String(description='Message indicating registration success and email verification prompt')
-    # })
+    # Define the response schema for successful signup (201)
+    auth_sign_up_success_model = auth_ns.model('SignUpSuccess', {
+        'message': fields.String(description='Message indicating registration success and email verification prompt')
+    })
 
-    # # Define the response schema for email already registered (400)
-    # auth_sign_up_email_exists_model = auth_ns.model('SignUpEmailExists', {
-    #     'message': fields.String(description='Message indicating email is already registered')
-    # })
+    # Define the response schema for email already registered (400)
+    auth_sign_up_email_exists_model = auth_ns.model('SignUpEmailExists', {
+        'message': fields.String(description='Message indicating email is already registered')
+    })
 
-    # auth_sign_up_internal_error_model = auth_ns.model('SignUpInternalServerError', {
-    #     'message': fields.String(description='Error message for internal server error'),
-    #     'error': fields.String(description='Specific error description', enum=[
-    #         'Profile Picture Upload Failed',
-    #         'User Creation Failed',
-    #         'Verification Email Failed'
-    #     ])
-    # })
+    auth_sign_up_internal_error_model = auth_ns.model('SignUpInternalServerError', {
+        'message': fields.String(description='Error message for internal server error'),
+        'error': fields.String(description='Specific error description', enum=[
+            'Profile Picture Upload Failed',
+            'User Creation Failed',
+            'Verification Email Failed'
+        ])
+    })
 
-    # @auth_ns.doc(
-    #     params={
-    #         'firstName': 'User\'s first name',
-    #         'lastName': 'User\'s last name',
-    #         'role': 'User\'s role',
-    #         'email': 'User\'s email address',
-    #         'password': 'User\'s password',
-    #         'bio': 'User\'s bio',
-    #     },
-    #     responses={
-    #         201: ('Registration Successful', auth_sign_up_success_model),
-    #         400: ('Email Already Registered', auth_sign_up_email_exists_model),
-    #         500: ('Internal Server Error: This may include "Profile Picture Upload Failed", "User Creation Failed", or "Verification Email Failed".', auth_sign_up_internal_error_model)
-    #     }
-    # )
+    @auth_ns.doc(
+        params={
+            'firstName': 'User\'s first name',
+            'lastName': 'User\'s last name',
+            'role': 'User\'s role',
+            'email': 'User\'s email address',
+            'password': 'User\'s password',
+            'bio': 'User\'s bio',
+        },
+        responses={
+            201: ('Registration Successful', auth_sign_up_success_model),
+            400: ('Email Already Registered', auth_sign_up_email_exists_model),
+            500: ('Internal Server Error: This may include "Profile Picture Upload Failed", "User Creation Failed", or "Verification Email Failed".', auth_sign_up_internal_error_model)
+        }
+    )
 
-    # @auth_ns.expect(auth_sign_up_params_model)
+    @auth_ns.expect(auth_sign_up_params_model)
 
     def post(self):
 
@@ -95,8 +95,6 @@ class SignUpResource(Resource):
         # verification_link = f"http://127.0.0.1:5000/auth/verify/123"
         # msg = MailMessage("Verify Your Email", sender="your-email@example.com", recipients=[email])
         # msg.body = f"Please click the following link to verify your email: {verification_link}"
-
-
 
 
         data = request.form
@@ -366,6 +364,32 @@ class UsersInConversationResource(Resource):
 
         return jsonify(users_list)
 
+class InstructorResource(Resource):
+    def get(self):
+        # Return the results as a JSON response
+        instructors = User.query.filter_by(role='instructor').all()
+        instructors_list = [user.to_dict() for user in instructors]
+
+        return jsonify(instructors_list)
+    
+    def delete(email):
+        email = request.args.get('email')  # Get the email from the query string
+    
+        if not email:
+            return {"message": "Email parameter is required"}, 400
+
+        # Query the user by email
+        user = User.query.filter_by(email=email).first()
+
+        if user:
+            db.session.delete(user)
+            db.session.commit()
+            return {"message": "User deleted successfully"}, 200
+        else:
+            return {"message": "User not found"}, 404
+
+
+
 class UserResource(Resource):
     # Model for successful user retrieval (200)
     auth_user_success_model = auth_ns.model('UserSuccess', {
@@ -527,3 +551,4 @@ user_ns.add_resource(EditUserResource, '/edit')
 
 users_ns.add_resource(AllUsersResource, '/all')
 users_ns.add_resource(UsersInConversationResource, '/conversations')
+users_ns.add_resource(InstructorResource, '/instructor')

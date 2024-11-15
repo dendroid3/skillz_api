@@ -1,6 +1,11 @@
 from flask import request, jsonify
-from flask_restful import Resource
+# from flask_restful import Resource
 from models import Review, db
+from flask_restx import Namespace, Resource
+
+
+review_ns = Namespace('reviews', description='Review-related operations')
+
 
 class ReviewResource(Resource):
     def get(self, review_id=None):
@@ -30,3 +35,6 @@ class ReviewResource(Resource):
         db.session.delete(review)
         db.session.commit()
         return {'message': 'Review deleted'}, 200
+
+
+review_ns.add_resource(ReviewResource, '', '/reviews/<int:review_id>')
