@@ -35,7 +35,7 @@ def send_email(to_email, subject, content):
         print("The /test route was accessed!")
         print(f"2FA Email Body: {content}")
         mail = current_app.extensions['mail']
-        # mail.send(msg)
+        mail.send(msg)
         return True
     except Exception as e:
         print(f"Error sending email: {e}")
