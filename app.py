@@ -65,7 +65,7 @@ def handle_preflight():
         response.headers.add('Access-Control-Allow-Headers', 'Content-Type, Authorization')
         return response
 
-from Resources import auth_ns, user_ns, users_ns, message_ns, enrollment_ns, course_ns, payment_ns, course_contents_ns, review_ns
+from Resources import auth_ns, user_ns, users_ns, message_ns, enrollment_ns, course_ns, payment_ns, course_contents_ns, review_ns, answers_ns, grade_ns
 
 # Import resources
 from Resources import (
@@ -119,6 +119,8 @@ api.add_namespace(enrollment_ns)
 api.add_namespace(payment_ns)
 api.add_namespace(accolade_ns)
 api.add_namespace(review_ns)
+api.add_namespace(answers_ns)
+api.add_namespace(grade_ns)
 
 # Create tables and run the application
 with app.app_context():

@@ -95,14 +95,14 @@ class Course(db.Model, SerializerMixin):
             'reviews': [review.to_dict() for review in self.reviews]
         }
 
-
-
 class CourseContent(db.Model, SerializerMixin):
     __tablename__ = 'coursecontent'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     course_id = db.Column(db.Integer, db.ForeignKey('courses.id'), nullable=True)
     content_type = db.Column(db.String(50))
     content_url = db.Column(db.String(255))
+    assignment = db.Column(db.String(255), nullable=True)
+    max_grade = db.Column(db.Integer, nullable=True)
     created_at = db.Column(db.TIMESTAMP, default=get_eat_now)
     updated_at = db.Column(db.TIMESTAMP, default=get_eat_now, onupdate=get_eat_now)
 
@@ -112,6 +112,8 @@ class CourseContent(db.Model, SerializerMixin):
             'course_id': self.course_id,
             'content_type': self.content_type,
             'content_url': self.content_url,
+            'assignment': self.assignment,
+            'max_grade': self.max_grade,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
         }
@@ -212,4 +214,53 @@ class Accolade(db.Model, SerializerMixin):
             'title': self.title,
             'description': self.description,
             'awarded_at': self.awarded_at.isoformat() if self.awarded_at else None,
+        }
+    
+class Grade(db.Model, SerializerMixin):
+    __tablename__ = 'grades'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    coursecontent_id = db.Column(db.Integer, db.ForeignKey('coursecontent.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    grade = db.Column(db.Integer, nullable=False)
+    created_at = db.Column(db.TIMESTAMP, default=get_eat_now)
+    updated_at = db.Column(db.TIMESTAMP, default=get_eat_now, onupdate=get_eat_now)
+
+    # Relationships
+    coursecontent = db.relationship('CourseContent', backref=db.backref('grades', lazy=True))
+    user = db.relationship('User', backref=db.backref('grades', lazy=True))
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'coursecontent_id': self.coursecontent_id,
+            'user_id': self.user_id,
+            'grade': self.grade,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+class Answer(db.Model):
+    __tablename__ = 'answers'
+    
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    grade_id = db.Column(db.Integer, db.ForeignKey('grades.id'), nullable=True)
+    coursecontent_id = db.Column(db.Integer, db.ForeignKey('coursecontent.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    answer = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.TIMESTAMP, default=datetime.utcnow)
+    updated_at = db.Column(db.TIMESTAMP, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    grade = db.relationship("Grade", backref="answers") 
+    coursecontent = db.relationship("CourseContent", backref="answers") 
+    user = db.relationship('User', backref=db.backref('answers', lazy=True))
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'grade_id': self.grade_id,
+            'answer': self.answer,
+            'coursecontent_id': self.coursecontent_id,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
         }

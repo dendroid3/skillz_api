@@ -23,7 +23,7 @@ from .message_resource import message_ns
 from .enrollments_resource import enrollment_ns
 from .course import course_ns
 from .payment import payment_ns
-from .course_content import course_contents_ns
+from .course_content import course_contents_ns, answers_ns, grade_ns
 from .reviews import review_ns
 
 
@@ -62,5 +62,9 @@ __all__ = [
 
     'course_contents_ns',
 
-    'review_ns'
+    'review_ns',
+
+    'answers_ns',
+
+    'grade_ns'
 ]
